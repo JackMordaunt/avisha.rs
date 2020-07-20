@@ -1,0 +1,30 @@
+body {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+grid {
+   display: flex;
+   flex-direction: column; 
+}
+
+row {
+    display: flex;
+    justify-content: space-around;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+col {
+    display: block;
+}
+
+/*
+Debug makes all elements visible with wireframe border and min dimensions.
+*/
+.debug * {
+    border: 1px black dotted;
+    color: black;
+    background-color: white; 
+}
