@@ -1,3 +1,4 @@
+use crate::tenant_form::{Form as TenantForm, Model as TenantFormModel};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::rc::Rc;
@@ -5,9 +6,30 @@ use yew::format::Json;
 use yew::prelude::*;
 use yew::services::storage::{Area, StorageService};
 
-use crate::tenant::{Model as TenantFormModel, Tenant, TenantForm};
-
 const KEY: &str = "yew.avisha.self";
+
+pub type ID = String;
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Hash, Eq, Debug)]
+pub struct Tenant {
+    pub id: ID,
+    pub name: String,
+    pub contact: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Hash, Eq, Debug)]
+pub struct Site {
+    pub number: String,
+    pub kind: SiteKind,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Hash, Eq, Debug)]
+pub enum SiteKind {
+    Cabin,
+    Flat,
+    House,
+    Other(String),
+}
 
 pub struct App {
     state: State,
@@ -19,6 +41,7 @@ pub struct App {
 pub struct State {
     pub debug: bool,
     pub tenants: HashSet<Tenant>,
+    pub sites: HashSet<Site>,
 }
 
 pub enum Msg {
@@ -83,8 +106,6 @@ impl Component for App {
         let debug = if self.state.debug { "debug" } else { "" };
         let toggle_debug = self.link.callback(|_| Msg::ToggleDebug);
 
-        let tenants = Rc::new(self.state.tenants.clone());
-
         html! {
             <div class=debug>
 
@@ -108,15 +129,17 @@ impl Component for App {
                                         {"Register Tenant"}
                                     </h5>
                                     <div class="card-body padded">
-                                        <TenantForm submit=self.link.callback(|v| Msg::RegisterTenant(v))/>
+                                        <TenantForm
+                                            submit=self.link.callback(|v| Msg::RegisterTenant(v))
+                                        />
                                     </div>
                                 </div>
                                 <div class="card">
                                     <h5 class="card-header">
-                                        {"Register Tenant"}
+                                        {"Register Site"}
                                     </h5>
                                     <div class="card-body">
-                                        // <TenantForm/>
+                                        // <SiteForm/>
                                     </div>
                                 </div>
                             </div>
@@ -124,28 +147,56 @@ impl Component for App {
                     </div>
                     <div class="row">
                         <div class="col">
-                            <div class="card">
-                                <h5 class="card-header">
-                                    {"Tenants"}
-                                </h5>
-                                <div class="card-body">
-                                    <list>
-                                        {for self.state.tenants.iter().map(|t| html!{
-                                            <item class="side padded">
-                                                <p>{format!("Name: {}", &t.name)}</p>
-                                                <p>{format!("Contact: {}", &t.contact)}</p>
-                                            </item>
-                                        })}
-                                    </list>
-                                </div>
-                            </div>
+                            {self.tenant_list()}
                         </div>
                         <div class="col">
+                            {self.site_list()}
                         </div>
                     </div>
                 </div>
 
+            </div>
+        }
+    }
+}
 
+impl App {
+    fn tenant_list(&self) -> Html {
+        html! {
+            <div class="card">
+                <h5 class="card-header">
+                    {"Tenants"}
+                </h5>
+                <div class="card-body">
+                    <list>
+                        {for self.state.tenants.iter().map(|t| html!{
+                            <item class="side padded">
+                                <p>{format!("Name: {}", &t.name)}</p>
+                                <p>{format!("Contact: {}", &t.contact)}</p>
+                            </item>
+                        })}
+                    </list>
+                </div>
+            </div>
+        }
+    }
+
+    fn site_list(&self) -> Html {
+        html! {
+            <div class="card">
+                <h5 class="card-header">
+                    {"Sites"}
+                </h5>
+                <div class="card-body">
+                    <list>
+                        {for self.state.sites.iter().map(|s| html!{
+                            <item class="side padded">
+                                <p>{format!("Number: {}", &s.number)}</p>
+                                <p>{format!("kind: {:?}", &s.kind)}</p>
+                            </item>
+                        })}
+                    </list>
+                </div>
             </div>
         }
     }
