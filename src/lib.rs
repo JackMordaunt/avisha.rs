@@ -1,3 +1,6 @@
+#![allow(unused)]
+#![recursion_limit = "1024"]
+
 mod app;
 mod tenant;
 
