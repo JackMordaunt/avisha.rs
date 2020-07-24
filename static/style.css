@@ -1,3 +1,4 @@
+/* Nav Overrides */
 .nav {
   background-color: black;
   color: white;
@@ -8,16 +9,7 @@
   margin: 0;
 }
 
-.debug * {
-  border: 1px dotted black inset;
-  background-color: white;
-  color: black;
-}
-
-.padded {
-  padding: 1rem;
-}
-
+/* Card Overrides */
 .card .card-header {
   background-color: black;
   color: white;
@@ -25,5 +17,38 @@
 }
 
 .card-body {
+  padding: 0;
+}
+
+.card-body.padded {
   padding: 2rem;
+}
+
+/* Generic Scrollable List */
+list {
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  max-height: 600px;
+  min-height: 150px;
+}
+
+list > item:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Utility */
+.debug * {
+  border: 1px dotted black inset;
+  background-color: white;
+  color: black;
+}
+
+.padded {
+  padding: 2rem;
+}
+
+.side.padded {
+  padding: 0 2rem;
 }

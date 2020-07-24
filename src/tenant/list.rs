@@ -39,11 +39,14 @@ impl Component for TenantList {
                     {"Tenants"}
                 </h5>
                 <div class="card-body">
-                    <ul>
+                    <list>
                         {for self.props.tenants.iter().map(|t| html!{
-                            <li>{&t.name}</li>
+                            <item class="side padded">
+                                <p>{format!("Name: {}", &t.name)}</p>
+                                <p>{format!("Contact: {}", &t.contact)}</p>
+                            </item>
                         })}
-                    </ul>
+                    </list>
                 </div>
             </div>
         }

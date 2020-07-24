@@ -107,7 +107,7 @@ impl Component for App {
                                     <h5 class="card-header">
                                         {"Register Tenant"}
                                     </h5>
-                                    <div class="card-body">
+                                    <div class="card-body padded">
                                         <TenantForm submit=self.link.callback(|v| Msg::RegisterTenant(v))/>
                                     </div>
                                 </div>
