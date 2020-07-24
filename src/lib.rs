@@ -1,4 +1,5 @@
 mod app;
+mod tenant;
 
 use wasm_bindgen::prelude::*;
 
