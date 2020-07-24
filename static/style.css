@@ -1,0 +1,29 @@
+.nav {
+  background-color: black;
+  color: white;
+  padding: 0 1rem;
+}
+
+.nav button {
+  margin: 0;
+}
+
+.debug * {
+  border: 1px dotted black inset;
+  background-color: white;
+  color: black;
+}
+
+.padded {
+  padding: 1rem;
+}
+
+.card .card-header {
+  background-color: black;
+  color: white;
+  padding: 1rem 2rem;
+}
+
+.card-body {
+  padding: 2rem;
+}
