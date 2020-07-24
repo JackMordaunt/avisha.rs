@@ -18,6 +18,7 @@ row {
 
 col {
     display: block;
+    justify-content: space-around;
 }
 
 /*

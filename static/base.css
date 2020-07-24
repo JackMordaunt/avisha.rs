@@ -25,7 +25,29 @@ brand .logo {
 }
 
 button.small {
-    /* max-height: 2rem;
-    max-width: 2rem; */
     font-size: xx-small;
+}
+
+card {
+    display: flex;
+    flex-direction: column;
+    margin: 2rem;
+    min-width: 400px;
+    min-height: 400px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+
+card header {
+    background-color: black;
+    color: white;
+    padding: 0.25rem 1.5rem;
+}
+
+card * {
+    margin: 0;
+}
+
+card section {
+    padding: 1.5rem;
 }
