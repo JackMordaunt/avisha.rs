@@ -34,16 +34,18 @@ impl Component for TenantList {
 
     fn view(&self) -> Html {
         html! {
-            <card>
-                <header>
-                    <h2>{"Tenants"}</h2>
-                </header>
-                <section>
-                    {for self.props.tenants.iter().map(|t| html!{
-                        <item>{&t.name}</item>
-                    })}
-                </section>
-            </card>
+            <div class="card">
+                <h5 class="card-header">
+                    {"Tenants"}
+                </h5>
+                <div class="card-body">
+                    <ul>
+                        {for self.props.tenants.iter().map(|t| html!{
+                            <li>{&t.name}</li>
+                        })}
+                    </ul>
+                </div>
+            </div>
         }
     }
 }

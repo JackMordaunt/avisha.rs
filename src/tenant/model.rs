@@ -6,4 +6,5 @@ pub type ID = String;
 pub struct Tenant {
     pub id: ID,
     pub name: String,
+    pub contact: String,
 }

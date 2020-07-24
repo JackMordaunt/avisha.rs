@@ -1,6 +1,3 @@
-#![allow(unused)]
-#![recursion_limit = "1024"]
-
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::rc::Rc;
@@ -8,7 +5,7 @@ use yew::format::Json;
 use yew::prelude::*;
 use yew::services::storage::{Area, StorageService};
 
-use crate::tenant::{Tenant, TenantList};
+use crate::tenant::{Model as TenantFormModel, Tenant, TenantForm, TenantList};
 
 const KEY: &str = "yew.avisha.self";
 
@@ -25,6 +22,7 @@ pub struct State {
 }
 
 pub enum Msg {
+    RegisterTenant(TenantFormModel),
     ToggleDebug,
     Nope,
 }
@@ -34,7 +32,7 @@ impl Component for App {
     type Properties = ();
 
     fn create(_: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let storage = StorageService::new(Area::Local);
+        let storage = StorageService::new(Area::Local).expect("no local storage");
 
         let state = {
             if let Json(Ok(restored_model)) = storage.restore(KEY) {
@@ -51,8 +49,26 @@ impl Component for App {
         }
     }
 
+    fn change(&mut self, _props: Self::Properties) -> ShouldRender {
+        true
+    }
+
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
+            Msg::RegisterTenant(TenantFormModel { name, contact }) => {
+                // Note: create a new ID, whatever else needs to be done to intro a new tenant.
+                // In this case id is just the tenant name, assuming tenant name must be unique.
+
+                let tenant = Tenant {
+                    id: name.clone(),
+                    name,
+                    contact,
+                };
+
+                if !self.state.tenants.contains(&tenant) {
+                    self.state.tenants.insert(tenant);
+                }
+            }
             Msg::ToggleDebug => {
                 self.state.debug = !self.state.debug;
             }
@@ -70,27 +86,54 @@ impl Component for App {
         let tenants = Rc::new(self.state.tenants.clone());
 
         html! {
-            <grid class=debug>
-                <row>
-                    <nav>
-                        <brand>
-                            <h1 class="logo">
-                                {"Avisha"}
-                            </h1>
-                        </brand>
-                        <div>
-                            <button class="small" onclick=toggle_debug>
-                                {"Debug"}
-                            </button>
+            <div class=debug>
+
+                <div class="nav">
+                    <h1 class="nav-logo">
+                        {"Avisha"}
+                    </h1>
+                    <div class="nav-item">
+                        <button onclick=toggle_debug>
+                            {"Debug"}
+                        </button>
+                    </div>
+                </div>
+
+                <div class="container">
+                    <div class="row padded">
+                        <div class="col">
+                            <div class="cards">
+                                <div class="card">
+                                    <h5 class="card-header">
+                                        {"Register Tenant"}
+                                    </h5>
+                                    <div class="card-body">
+                                        <TenantForm submit=self.link.callback(|v| Msg::RegisterTenant(v))/>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <h5 class="card-header">
+                                        {"Register Tenant"}
+                                    </h5>
+                                    <div class="card-body">
+                                        // <TenantForm/>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </nav>
-                </row>
-                <row>
-                    <col>
-                        <TenantList tenants=&tenants />
-                    </col>
-                </row>
-            </grid>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <TenantList tenants=&tenants/>
+                        </div>
+                        <div class="col">
+                            <TenantList tenants=&tenants/>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
         }
     }
 }
