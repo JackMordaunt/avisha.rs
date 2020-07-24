@@ -5,7 +5,7 @@ use yew::format::Json;
 use yew::prelude::*;
 use yew::services::storage::{Area, StorageService};
 
-use crate::tenant::{Model as TenantFormModel, Tenant, TenantForm, TenantList};
+use crate::tenant::{Model as TenantFormModel, Tenant, TenantForm};
 
 const KEY: &str = "yew.avisha.self";
 
@@ -124,10 +124,23 @@ impl Component for App {
                     </div>
                     <div class="row">
                         <div class="col">
-                            <TenantList tenants=&tenants/>
+                            <div class="card">
+                                <h5 class="card-header">
+                                    {"Tenants"}
+                                </h5>
+                                <div class="card-body">
+                                    <list>
+                                        {for self.state.tenants.iter().map(|t| html!{
+                                            <item class="side padded">
+                                                <p>{format!("Name: {}", &t.name)}</p>
+                                                <p>{format!("Contact: {}", &t.contact)}</p>
+                                            </item>
+                                        })}
+                                    </list>
+                                </div>
+                            </div>
                         </div>
                         <div class="col">
-                            <TenantList tenants=&tenants/>
                         </div>
                     </div>
                 </div>
