@@ -2,6 +2,7 @@
 #![recursion_limit = "1024"]
 
 mod app;
+mod site_form;
 mod tenant_form;
 
 use wasm_bindgen::prelude::*;

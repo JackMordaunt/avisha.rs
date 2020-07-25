@@ -1,3 +1,4 @@
+use crate::site_form::{Form as SiteForm, Model as SiteFormModel};
 use crate::tenant_form::{Form as TenantForm, Model as TenantFormModel};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -46,6 +47,7 @@ pub struct State {
 
 pub enum Msg {
     RegisterTenant(TenantFormModel),
+    ListSite(SiteFormModel),
     ToggleDebug,
     Nope,
 }
@@ -90,6 +92,16 @@ impl Component for App {
 
                 if !self.state.tenants.contains(&tenant) {
                     self.state.tenants.insert(tenant);
+                }
+            }
+            Msg::ListSite(SiteFormModel { number, kind }) => {
+                let site = Site {
+                    number,
+                    kind: kind.into(),
+                };
+
+                if !self.state.sites.contains(&site) {
+                    self.state.sites.insert(site);
                 }
             }
             Msg::ToggleDebug => {
@@ -138,8 +150,10 @@ impl Component for App {
                                     <h5 class="card-header">
                                         {"Register Site"}
                                     </h5>
-                                    <div class="card-body">
-                                        // <SiteForm/>
+                                    <div class="card-body padded">
+                                        <SiteForm
+                                            submit=self.link.callback(|v| Msg::ListSite(v))
+                                        />
                                     </div>
                                 </div>
                             </div>
@@ -192,12 +206,53 @@ impl App {
                         {for self.state.sites.iter().map(|s| html!{
                             <item class="side padded">
                                 <p>{format!("Number: {}", &s.number)}</p>
-                                <p>{format!("kind: {:?}", &s.kind)}</p>
+                                <p>{format!("Kind: {}", &s.kind)}</p>
                             </item>
                         })}
                     </list>
                 </div>
             </div>
+        }
+    }
+}
+
+use std::fmt;
+
+impl fmt::Display for SiteKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                SiteKind::Flat => "Flat",
+                SiteKind::Cabin => "Cabin",
+                SiteKind::House => "House",
+                SiteKind::Other(kind) => kind,
+            }
+        )
+    }
+}
+
+impl From<&str> for SiteKind {
+    fn from(s: &str) -> Self {
+        let s = s.to_lowercase();
+        match s.as_str() {
+            "cabin" => SiteKind::Cabin,
+            "house" => SiteKind::House,
+            "flat" => SiteKind::Flat,
+            _ => SiteKind::Other(s),
+        }
+    }
+}
+
+impl From<String> for SiteKind {
+    fn from(s: String) -> Self {
+        let s = s.to_lowercase();
+        match s.as_str() {
+            "cabin" => SiteKind::Cabin,
+            "house" => SiteKind::House,
+            "flat" => SiteKind::Flat,
+            _ => SiteKind::Other(s),
         }
     }
 }
