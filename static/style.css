@@ -56,3 +56,47 @@ list > item:nth-child(even) {
 .side.padded {
   padding: 0 2rem;
 }
+
+.fade.in {
+  opacity: 1;
+}
+
+.close {
+  position: relative;
+  color: inherit;
+  float: right;
+}
+
+.danger {
+	color: #a94442;
+	background-color: #f2dede;
+	border-color: #ebccd1;
+}
+
+/* Alert */
+.alert {
+  border: 1px solid transparent;
+  padding: 1rem 2rem;
+  min-width: 300px;
+  min-height: 3rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.alerts {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.alerts > .alert {
+  margin-bottom: 2rem;
+}
+
+/* Notifications */
+/* Cleanup: hardcoded position based on nav size. */
+.notifications {
+  position: absolute;
+  top: 8rem;
+  right: 3rem;
+}

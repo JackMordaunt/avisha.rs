@@ -147,9 +147,12 @@ impl Component for App {
                         <div class="alerts">
                             {for self.state.errors.iter().enumerate().map(|(ii, e)| html! {
                                 <div class="alert danger">
-                                    <button onclick=dismiss_err(ii)>
-                                        <i class="fa fa-close close"/>
-                                    </button>
+                                    <a
+                                        class="close"
+                                        onclick=dismiss_err(ii)
+                                    >
+                                        <i class="fa fa-close"/>
+                                    </a>
                                     <p>{e}</p>
                                 </div>
                             })}
@@ -242,6 +245,7 @@ impl App {
 
     fn error(&mut self, msg: String) -> bool {
         self.state.errors.push(msg);
+        self.storage.store(KEY, Json(&self.state));
         true
     }
 }
