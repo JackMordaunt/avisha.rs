@@ -1,7 +1,7 @@
 use crate::site_form::{Form as SiteForm, Model as SiteFormModel};
 use crate::tenant_form::{Form as TenantForm, Model as TenantFormModel};
 use serde_derive::{Deserialize, Serialize};
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::rc::Rc;
 use yew::format::Json;
 use yew::prelude::*;
@@ -9,18 +9,15 @@ use yew::services::storage::{Area, StorageService};
 
 const KEY: &str = "yew.avisha.self";
 
-pub type ID = String;
-
 #[derive(Serialize, Deserialize, Clone, PartialEq, Hash, Eq, Debug)]
 pub struct Tenant {
-    pub id: ID,
-    pub name: String,
+    pub name: String, // primary key
     pub contact: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, Hash, Eq, Debug)]
 pub struct Site {
-    pub number: String,
+    pub number: String, // primary key
     pub kind: SiteKind,
 }
 
@@ -41,13 +38,15 @@ pub struct App {
 #[derive(Default, Clone, Serialize, Deserialize)]
 pub struct State {
     pub debug: bool,
-    pub tenants: HashSet<Tenant>,
-    pub sites: HashSet<Site>,
+    pub tenants: HashMap<String, Tenant>,
+    pub sites: HashMap<String, Site>,
+    pub errors: Vec<String>,
 }
 
 pub enum Msg {
     RegisterTenant(TenantFormModel),
     ListSite(SiteFormModel),
+    DismissErr(usize),
     ToggleDebug,
     Nope,
 }
@@ -81,28 +80,37 @@ impl Component for App {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::RegisterTenant(TenantFormModel { name, contact }) => {
-                // Note: create a new ID, whatever else needs to be done to intro a new tenant.
-                // In this case id is just the tenant name, assuming tenant name must be unique.
+                if name.is_empty() {
+                    return self.error(format!("tenant name must be non-zero"));
+                }
 
-                let tenant = Tenant {
-                    id: name.clone(),
-                    name,
-                    contact,
+                if self.state.tenants.contains_key(&name) {
+                    return self.error(format!("tenant name must be unique"));
                 };
 
-                if !self.state.tenants.contains(&tenant) {
-                    self.state.tenants.insert(tenant);
-                }
+                self.state
+                    .tenants
+                    .insert(name.clone(), Tenant { name, contact });
             }
             Msg::ListSite(SiteFormModel { number, kind }) => {
-                let site = Site {
-                    number,
-                    kind: kind.into(),
-                };
-
-                if !self.state.sites.contains(&site) {
-                    self.state.sites.insert(site);
+                if number.is_empty() {
+                    return self.error(format!("site number must be non-zero"));
                 }
+
+                if self.state.sites.contains_key(&number) {
+                    return self.error(format!("site number must be unique"));
+                }
+
+                self.state.sites.insert(
+                    number.clone(),
+                    Site {
+                        number,
+                        kind: kind.into(),
+                    },
+                );
+            }
+            Msg::DismissErr(ii) => {
+                self.state.errors.remove(ii);
             }
             Msg::ToggleDebug => {
                 self.state.debug = !self.state.debug;
@@ -118,6 +126,9 @@ impl Component for App {
         let debug = if self.state.debug { "debug" } else { "" };
         let toggle_debug = self.link.callback(|_| Msg::ToggleDebug);
 
+        let dismiss_err =
+            |ii: usize| -> Callback<_> { self.link.callback(move |_| Msg::DismissErr(ii)) };
+
         html! {
             <div class=debug>
 
@@ -125,10 +136,24 @@ impl Component for App {
                     <h1 class="nav-logo">
                         {"Avisha"}
                     </h1>
+
                     <div class="nav-item">
                         <button onclick=toggle_debug>
                             {"Debug"}
                         </button>
+                    </div>
+
+                    <div class="notifications">
+                        <div class="alerts">
+                            {for self.state.errors.iter().enumerate().map(|(ii, e)| html! {
+                                <div class="alert danger">
+                                    <button onclick=dismiss_err(ii)>
+                                        <i class="fa fa-close close"/>
+                                    </button>
+                                    <p>{e}</p>
+                                </div>
+                            })}
+                        </div>
                     </div>
                 </div>
 
@@ -183,7 +208,7 @@ impl App {
                 </h5>
                 <div class="card-body">
                     <list>
-                        {for self.state.tenants.iter().map(|t| html!{
+                        {for self.state.tenants.values().map(|t| html!{
                             <item class="side padded">
                                 <p>{format!("Name: {}", &t.name)}</p>
                                 <p>{format!("Contact: {}", &t.contact)}</p>
@@ -203,7 +228,7 @@ impl App {
                 </h5>
                 <div class="card-body">
                     <list>
-                        {for self.state.sites.iter().map(|s| html!{
+                        {for self.state.sites.values().map(|s| html!{
                             <item class="side padded">
                                 <p>{format!("Number: {}", &s.number)}</p>
                                 <p>{format!("Kind: {}", &s.kind)}</p>
@@ -213,6 +238,11 @@ impl App {
                 </div>
             </div>
         }
+    }
+
+    fn error(&mut self, msg: String) -> bool {
+        self.state.errors.push(msg);
+        true
     }
 }
 
