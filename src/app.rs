@@ -37,7 +37,6 @@ pub struct App {
 
 #[derive(Default, Clone, Serialize, Deserialize)]
 pub struct State {
-    pub debug: bool,
     pub tenants: HashMap<String, Tenant>,
     pub sites: HashMap<String, Site>,
     pub errors: Vec<String>,
@@ -47,7 +46,6 @@ pub enum Msg {
     RegisterTenant(TenantFormModel),
     ListSite(SiteFormModel),
     DismissErr(usize),
-    ToggleDebug,
     Nope,
 }
 
@@ -112,9 +110,6 @@ impl Component for App {
             Msg::DismissErr(ii) => {
                 self.state.errors.remove(ii);
             }
-            Msg::ToggleDebug => {
-                self.state.debug = !self.state.debug;
-            }
             Msg::Nope => {}
         };
 
@@ -123,29 +118,22 @@ impl Component for App {
     }
 
     fn view(&self) -> Html {
-        let debug = if self.state.debug { "debug" } else { "" };
-        let toggle_debug = self.link.callback(|_| Msg::ToggleDebug);
-
         let dismiss_err =
             |ii: usize| -> Callback<_> { self.link.callback(move |_| Msg::DismissErr(ii)) };
 
+        let errors = self.state.errors.iter().enumerate();
+
         html! {
-            <div class=debug>
+            <div>
 
                 <div class="nav">
                     <h1 class="nav-logo">
                         {"Avisha"}
                     </h1>
 
-                    <div class="nav-item">
-                        <button onclick=toggle_debug>
-                            {"Debug"}
-                        </button>
-                    </div>
-
                     <div class="notifications">
                         <div class="alerts">
-                            {for self.state.errors.iter().enumerate().map(|(ii, e)| html! {
+                            {for errors.map(|(ii, e)| html! {
                                 <div class="alert danger">
                                     <a
                                         class="close"

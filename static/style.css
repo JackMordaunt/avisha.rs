@@ -3,6 +3,7 @@
   background-color: black;
   color: white;
   padding: 0 1rem;
+  min-height: 4rem;
 }
 
 .nav button {
