@@ -24,6 +24,10 @@
   padding: 2rem;
 }
 
+.cards {
+  overflow: unset;
+}
+
 /* Generic Scrollable List */
 list {
   display: flex;
