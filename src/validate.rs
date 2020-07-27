@@ -1,4 +1,4 @@
-use crate::app::Site;
+use crate::app::{Site, Tenant};
 use crate::site_form::Model as SiteFormModel;
 use crate::tenant_form::Model as TenantFormModel;
 use std::collections::HashMap;
