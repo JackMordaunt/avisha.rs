@@ -4,6 +4,7 @@
 mod app;
 mod site_form;
 mod tenant_form;
+mod validate;
 
 use wasm_bindgen::prelude::*;
 

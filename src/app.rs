@@ -1,5 +1,6 @@
 use crate::site_form::{Form as SiteForm, Model as SiteFormModel};
 use crate::tenant_form::{Form as TenantForm, Model as TenantFormModel};
+use crate::validate::{SiteValidator, TenantValidator, Validate};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -91,14 +92,6 @@ impl Component for App {
                     .insert(name.clone(), Tenant { name, contact });
             }
             Msg::ListSite(SiteFormModel { number, kind }) => {
-                if number.is_empty() {
-                    return self.error(format!("site number must be non-zero"));
-                }
-
-                if self.state.sites.contains_key(&number) {
-                    return self.error(format!("site number must be unique"));
-                }
-
                 self.state.sites.insert(
                     number.clone(),
                     Site {
@@ -122,6 +115,13 @@ impl Component for App {
             |ii: usize| -> Callback<_> { self.link.callback(move |_| Msg::DismissErr(ii)) };
 
         let errors = self.state.errors.iter().enumerate();
+
+        // Fixme: How to avoid cloning the data just to pass it in?
+        // - SiteValidator doesn't need access to the data,
+        //   just an object that can check the data.
+        let site_validator = SiteValidator {
+            sites: self.state.sites.clone(),
+        };
 
         html! {
             <div>
@@ -164,11 +164,12 @@ impl Component for App {
                                 </div>
                                 <div class="card">
                                     <h5 class="card-header">
-                                        {"Register Site"}
+                                        {"List Site"}
                                     </h5>
                                     <div class="card-body padded">
-                                        <SiteForm
+                                        <SiteForm::<SiteValidator>
                                             submit=self.link.callback(|v| Msg::ListSite(v))
+                                            validator=site_validator
                                         />
                                     </div>
                                 </div>
