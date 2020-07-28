@@ -1,5 +1,5 @@
 use crate::app::{Site, Tenant};
-use crate::site_form::Model as SiteFormModel;
+use crate::site_form;
 use crate::tenant_form::Model as TenantFormModel;
 use std::collections::HashMap;
 
@@ -42,7 +42,7 @@ pub struct SiteValidator {
 }
 
 impl Validate for SiteValidator {
-    type Model = SiteFormModel;
+    type Model = site_form::Model;
 
     fn validate(&self, m: &Self::Model) -> Result<(), HashMap<String, String>> {
         let mut errors: HashMap<String, String> = HashMap::new();
@@ -53,6 +53,12 @@ impl Validate for SiteValidator {
 
         if self.sites.contains_key(&m.number) {
             errors.insert("number".into(), format!("must be unique"));
+        }
+
+        if let site_form::Kind::Other(k) = &m.kind {
+            if k.is_empty() {
+                errors.insert("kind".into(), format!("must be non-zero"));
+            }
         }
 
         if !errors.is_empty() {
