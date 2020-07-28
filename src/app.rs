@@ -1,5 +1,5 @@
-use crate::site_form::{Form as SiteForm, Model as SiteFormModel};
-use crate::tenant_form::{Form as TenantForm, Model as TenantFormModel};
+use crate::site_form::{self, Form as SiteForm, Model as SiteFormModel};
+use crate::tenant_form::{self, Form as TenantForm, Model as TenantFormModel};
 use crate::validate::{SiteValidator, TenantValidator, Validate};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -239,8 +239,6 @@ impl App {
     }
 }
 
-use std::fmt;
-
 impl fmt::Display for SiteKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -276,6 +274,18 @@ impl From<String> for SiteKind {
             "house" => SiteKind::House,
             "flat" => SiteKind::Flat,
             _ => SiteKind::Other(s),
+        }
+    }
+}
+
+impl From<site_form::Kind> for SiteKind {
+    fn from(kind: site_form::Kind) -> Self {
+        use site_form::Kind::*;
+        match kind {
+            Cabin => SiteKind::Cabin,
+            House => SiteKind::House,
+            Flat => SiteKind::Flat,
+            Other(v) => SiteKind::Other(v),
         }
     }
 }

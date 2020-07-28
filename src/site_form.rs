@@ -1,4 +1,5 @@
 use crate::validate::Validate;
+use std::default::Default;
 use std::collections::HashMap;
 use std::mem;
 use std::rc::Rc;
@@ -8,6 +9,7 @@ use web_sys::{Event, FocusEvent, HtmlSelectElement, HtmlElement};
 use yew::prelude::*;
 use yew::services::ConsoleService;
 use yewtil::NeqAssign;
+use yew_components::Select;
 
 pub struct Form<V>
 where
@@ -19,10 +21,10 @@ where
     pub errors: HashMap<String, String>,
 }
 
-#[derive(Default, Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Model {
     pub number: String,
-    pub kind: String,
+    pub kind: Kind,
 }
 
 #[derive(Clone, PartialEq, Debug, EnumIter, Display)]
@@ -43,15 +45,16 @@ where
 }
 
 pub enum Msg {
-    Edit(Field, String),
+    Edit(Field),
     Submit,
     Nope,
 }
 
 // Cleanup: Can we generate fields based on struct definition? 
+#[derive(Debug)]
 pub enum Field {
-    Number,
-    Kind,
+    Number(String),
+    Kind(Kind),
 }
 
 impl<V> Component for Form<V>
@@ -65,10 +68,7 @@ where
         Form {
             props,
             link,
-            model: Model {
-                kind: Kind::Cabin.to_string(),
-                ..Model::default()
-            },
+            model: Model::default(),
             errors: HashMap::new(),
         }
     }
@@ -79,24 +79,23 @@ where
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::Edit(field, value) => {
+            Msg::Edit(field) => {
                 match field {
-                    Field::Number => self.model.number = value,
-                    Field::Kind => self.model.kind = value,
+                    Field::Number(value) => self.model.number = value,
+                    Field::Kind(value) => self.model.kind = value,
                 };
                 self.validate_edit();
             }
             Msg::Submit => {
                 self.validate();
                 if self.props.validator.validate(&self.model).is_ok() {
+                    ConsoleService::log(&format!("submitting: {:?}", self.model));
                     self.props
                         .submit
                         .emit(mem::replace(&mut self.model, Model::default()));
                 }
             }
-            Msg::Nope | _ => {
-                return false;
-            }
+            Msg::Nope | _ => {}
         };
 
         true
@@ -107,11 +106,6 @@ where
             e.prevent_default();
             Msg::Submit
         });
-
-        let display_custom_kind_input = match Kind::from(self.model.kind.as_str()) {
-            Kind::Other(_) => "display: block",
-            _ => "display: none",
-        };
 
         let check_error = |field_name: &str| -> &str {
             if self.errors.contains_key(field_name) {
@@ -134,44 +128,40 @@ where
                     <input
                         type="text"
                         placeholder="Site Number"
-                        oninput=self.link.callback(|v: InputData| Msg::Edit(Field::Number, v.value))
+                        oninput=self.link.callback(|v: InputData| {
+                            Msg::Edit(Field::Number(v.value))
+                        })
                         value=&self.model.number
                     />
                     <div class="alert danger">
                         {get_error("number")}
                     </div>
                 </div>
-                <div>
+                <div class=check_error("kind")>
                     <label>{"Kind"}</label>
-                    <select
-                        onchange=self.link.callback(|v: ChangeData| match v {
-                            ChangeData::Select(v) => Msg::Edit(Field::Kind, v.value()),
-                            _ => Msg::Nope,
-                        })
-                    >
-                        {for Kind::iter().map(|k| {
-                            if self.model.kind == k.to_string() {
-                                html! {
-                                    <option value={&k} selected=true>
-                                        {&k}
-                                    </option>
-                                }
-                            } else {
-                                html! {
-                                    <option value={&k}>
-                                        {&k}
-                                    </option>
-                                }
-                            }
-                        })}
-                    </select>
-                    <input
-                        type="text"
-                        style=display_custom_kind_input
-                        placeholder="House, Cabin, etc"
-                        oninput=self.link.callback(|v: InputData| Msg::Edit(Field::Kind, v.value))
-                        value=&self.model.kind
+                    <Select<Kind>
+                        on_change=self.link.callback(|v| Msg::Edit(Field::Kind(v)))
+                        options=Kind::iter().collect::<Vec<_>>()
+                        selected=&self.model.kind
                     />
+                        
+                    {if let Kind::Other(kind) = &self.model.kind {
+                        html! {
+                            <input
+                                type="text"
+                                placeholder="House, Cabin, etc"
+                                oninput=self.link.callback(|v: InputData| {
+                                    Msg::Edit(Field::Kind(Kind::Other(v.value)))
+                                })
+                                value=&kind
+                            />
+                        }
+                    } else {
+                        html!{}
+                    }}
+                    <div class="alert danger">
+                        {get_error("kind")}
+                    </div>
                 </div>
                 <button
                     type="submit"
@@ -204,8 +194,10 @@ where
             if self.model.number.is_empty() {
                 self.errors.remove("number");
             }
-            if self.model.kind.is_empty() {
-                self.errors.remove("kind");
+            if let Kind::Other(k) = &self.model.kind {
+                if k.is_empty() {
+                    self.errors.remove("kind");
+                }
             }
         }
     }
@@ -214,11 +206,21 @@ where
 impl From<&str> for Kind {
     fn from(s: &str) -> Self {
         let s = s.to_lowercase();
-        match s.as_str() {
+        match s.trim() {
             "cabin" => Kind::Cabin,
             "house" => Kind::House,
             "flat" => Kind::Flat,
+            s if s.is_empty() => Kind::Cabin,
             _ => Kind::Other(s),
+        }
+    }
+}
+
+impl Default for Model {
+    fn default() -> Self {
+        Model {
+            number: String::new(),
+            kind: Kind::Cabin,
         }
     }
 }
