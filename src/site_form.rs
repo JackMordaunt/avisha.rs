@@ -93,7 +93,6 @@ where
                         .submit
                         .emit(mem::replace(&mut self.model, Model::default()));
                 }
-                return true;
             }
             Msg::Nope | _ => {
                 return false;
@@ -145,10 +144,9 @@ where
                 <div>
                     <label>{"Kind"}</label>
                     <select
-                        onchange=self.link.callback(|v: ChangeData| if let ChangeData::Select(v) = v {
-                            Msg::Edit(Field::Kind, v.value())
-                        } else {
-                            Msg::Nope
+                        onchange=self.link.callback(|v: ChangeData| match v {
+                            ChangeData::Select(v) => Msg::Edit(Field::Kind, v.value()),
+                            _ => Msg::Nope,
                         })
                     >
                         {for Kind::iter().map(|k| {
