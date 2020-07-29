@@ -103,10 +103,27 @@ list > item:nth-child(even) {
 }
 
 /* Form Errors */
-.error .alert {
+.error input,
+.error select {
+  border-color: red;
+}
+
+.error-message {
+  display: none;
+  position: relative; 
+  border: 1px solid transparent;
+  padding: 1rem 2rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  color: #a94442;
+	background-color: #f2dede;
+	border-color: #ebccd1;
+}
+
+.error .error-message {
   display: inline-block;
 }
-.error .alert::before {
+
+.error-message::before {
   content: '';
   width: 0;
   height: 0;
@@ -117,11 +134,6 @@ list > item:nth-child(even) {
   top: -10px;
 }
 
-.error input,
-.error select {
-  border-color: red;
-}
-
 button:disabled {
   background-color: grey;
   cursor: not-allowed;
@@ -130,3 +142,4 @@ button:disabled {
 button[disabled]:hover {
   background-color: grey;
 }
+

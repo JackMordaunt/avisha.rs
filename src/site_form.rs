@@ -1,15 +1,16 @@
+use crate::form;
 use crate::validate::Validate;
-use std::default::Default;
 use std::collections::HashMap;
+use std::default::Default;
 use std::mem;
 use std::rc::Rc;
 use strum::IntoEnumIterator;
 use strum_macros::{Display, EnumIter};
-use web_sys::{Event, FocusEvent, HtmlSelectElement, HtmlElement};
+use web_sys::{Event, FocusEvent, HtmlElement, HtmlSelectElement};
 use yew::prelude::*;
 use yew::services::ConsoleService;
-use yewtil::NeqAssign;
 use yew_components::Select;
+use yewtil::NeqAssign;
 
 pub struct Form<V>
 where
@@ -50,7 +51,8 @@ pub enum Msg {
     Nope,
 }
 
-// Cleanup: Can we generate fields based on struct definition? 
+// Cleanup: Can we generate fields based on struct definition?
+// Use a macro? 
 #[derive(Debug)]
 pub enum Field {
     Number(String),
@@ -107,24 +109,21 @@ where
             Msg::Submit
         });
 
-        let check_error = |field_name: &str| -> &str {
-            if self.errors.contains_key(field_name) {
-                "error"
-            } else {
-                ""
-            }
-        };
-
-        let get_error = |field_name: &str| -> &str {
-            self.errors.get(field_name).map(|s| s.as_str()).unwrap_or("")
+        let get_error = |field_name: &str| -> Option<String> {
+            self.errors
+                .get(field_name)
+                .map(|s| s.to_string())
         };
 
         html! {
             <form
                 onsubmit=submit
             >
-                <div class=check_error("number")>
-                    <label>{"Number"}</label>
+
+                <form::Field
+                    label={"Site Number"}
+                    error=get_error("number")
+                >
                     <input
                         type="text"
                         placeholder="Site Number"
@@ -133,20 +132,19 @@ where
                         })
                         value=&self.model.number
                     />
-                    <div class="alert danger">
-                        {get_error("number")}
-                    </div>
-                </div>
-                <div class=check_error("kind")>
-                    <label>{"Kind"}</label>
+                </form::Field>
+                
+                <form::Field
+                    label={"Kind"}
+                    error=get_error("kind")
+                >
                     <Select<Kind>
                         on_change=self.link.callback(|v| Msg::Edit(Field::Kind(v)))
                         options=Kind::iter().collect::<Vec<_>>()
                         selected=&self.model.kind
                     />
-                        
-                    {if let Kind::Other(kind) = &self.model.kind {
-                        html! {
+                    {match &self.model.kind {
+                        Kind::Other(kind) => html! {
                             <input
                                 type="text"
                                 placeholder="House, Cabin, etc"
@@ -155,14 +153,11 @@ where
                                 })
                                 value=&kind
                             />
-                        }
-                    } else {
-                        html!{}
+                        },
+                        _ => html! {},
                     }}
-                    <div class="alert danger">
-                        {get_error("kind")}
-                    </div>
-                </div>
+                </form::Field>
+                
                 <button
                     type="submit"
                     disabled={self.errors.len() > 0}
@@ -176,7 +171,7 @@ where
 
 impl<V> Form<V>
 where
-    V: Validate<Model=Model> + Clone + PartialEq + 'static
+    V: Validate<Model = Model> + Clone + PartialEq + 'static,
 {
     fn validate(&mut self) {
         match self.props.validator.validate(&self.model) {
@@ -190,7 +185,7 @@ where
         self.validate();
 
         {
-            // TODO: make fieldwise error clearing dynamic. 
+            // TODO: make fieldwise error clearing dynamic.
             if self.model.number.is_empty() {
                 self.errors.remove("number");
             }
