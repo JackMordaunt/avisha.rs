@@ -1,8 +1,7 @@
 use crate::validate::Validate;
 use std::collections::HashMap;
 use std::mem;
-use yew::Renderable;
-use yew::{prelude::*, Component, ComponentLink};
+use yew::{prelude::*, Component, ComponentLink, Renderable};
 use yewtil::NeqAssign;
 
 /// Field wraps a form input with a label and error display.
@@ -38,17 +37,17 @@ impl Component for Field {
             None => html! {
                 <div>
                     <label>
-                        { &self.props.label }
+                        {&self.props.label}
                     </label>
-                    { self.props.children.clone() }
+                    {for self.props.children.iter()}
                 </div>
             },
             Some(err) => html! {
                 <div class="error">
                     <label>
-                        { &self.props.label }
+                        {&self.props.label}
                     </label>
-                    { self.props.children.clone() }
+                    {for self.props.children.iter()}
                     <div class="error-message">
                         {err}
                     </div>
