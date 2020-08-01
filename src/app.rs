@@ -124,6 +124,9 @@ impl Component for App {
         let site_validator = SiteValidator {
             sites: self.state.sites.clone(),
         };
+        let tenant_validator = TenantValidator {
+            tenants: self.state.tenants.clone(),
+        };
 
         html! {
             <div>
@@ -159,8 +162,9 @@ impl Component for App {
                                         {"Register Tenant"}
                                     </h5>
                                     <div class="card-body padded">
-                                        <TenantForm
+                                        <TenantForm::<TenantValidator>
                                             submit=self.link.callback(|v| Msg::RegisterTenant(v))
+                                            validator=tenant_validator
                                         />
                                     </div>
                                 </div>

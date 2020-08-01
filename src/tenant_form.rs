@@ -1,12 +1,19 @@
+use crate::form;
+use crate::validate::Validate;
 use std::mem;
 use web_sys::{Event, FocusEvent};
 use yew::prelude::*;
 use yewtil::NeqAssign;
+use std::collections::HashMap;
 
-pub struct Form {
+pub struct Form<V>
+where
+    V: Validate<Model = Model> + Clone + PartialEq + 'static,
+{
     pub link: ComponentLink<Self>,
-    pub props: Props,
+    pub props: Props<V>,
     pub model: Model,
+    pub errors: HashMap<String, String>,
 }
 
 #[derive(Default, Clone, PartialEq, Debug)]
@@ -16,24 +23,34 @@ pub struct Model {
 }
 
 #[derive(Properties, Clone, PartialEq)]
-pub struct Props {
+pub struct Props<V>
+where 
+    V: Validate + Clone,
+{
     pub submit: Callback<Model>,
+    pub validator: V,
 }
 
 pub enum Msg {
-    Name(InputData),
-    Contact(InputData),
+    Edit(Field),
     Submit,
     Nope,
 }
 
-impl Component for Form {
+pub enum Field {
+    Name(String),
+    Contact(String),
+}
+
+impl<V> Component for Form<V>
+where 
+    V: Validate<Model = Model> + Clone + PartialEq + 'static,
+{
     type Message = Msg;
-    type Properties = Props;
+    type Properties = Props<V>;
 
     fn create(props: Self::Properties, link: ComponentLink<Self>) -> Self {
-        let model = Model::default();
-        Form { props, link, model }
+        Form { props, link, model: Model::default(), errors: HashMap::new() }
     }
 
     fn change(&mut self, props: Self::Properties) -> ShouldRender {
@@ -42,19 +59,23 @@ impl Component for Form {
 
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
-            Msg::Name(name) => {
-                self.model.name = name.value;
-            }
-            Msg::Contact(contact) => {
-                self.model.contact = contact.value;
+            Msg::Edit(field) => {
+                match field {
+                    Field::Name(value) => self.model.name = value,
+                    Field::Contact(value) => self.model.contact = value,
+                };
+                self.validate_edit();
             }
             Msg::Nope => {
                 return false;
             }
             Msg::Submit => {
-                self.props
-                    .submit
-                    .emit(mem::replace(&mut self.model, Model::default()));
+                self.validate();
+                if self.props.validator.validate(&self.model).is_ok() {
+                    self.props
+                        .submit
+                        .emit(mem::replace(&mut self.model, Model::default()));
+                }
             }
         }
         true
@@ -66,30 +87,67 @@ impl Component for Form {
             Msg::Submit
         });
 
+
+        let get_error = |field_name: &str| -> Option<String> {
+            self.errors
+                .get(field_name)
+                .map(|s| s.to_string())
+        };
+
         html! {
             <form onsubmit=submit>
-                <div>
-                    <label>{"Name"}</label>
+                <form::Field
+                    label={"Name"}
+                    error=get_error("name")
+                >
                     <input
                         type="text"
                         placeholder="Tenant Name"
-                        oninput=self.link.callback(|v| Msg::Name(v))
+                        oninput=self.link.callback(|v: InputData| Msg::Edit(Field::Name(v.value)))
                         value=&self.model.name
                     />
-                </div>
-                <div>
-                    <label>{"Contact"}</label>
+                </form::Field>
+
+                <form::Field
+                    label={"Contact"}
+                    error=get_error("contact")
+                >
                     <input
                         type="text"
                         placeholder="Email or Phone"
-                        oninput=self.link.callback(|v| Msg::Contact(v))
+                        oninput=self.link.callback(|v: InputData| Msg::Edit(Field::Contact(v.value)))
                         value=&self.model.contact
                     />
-                </div>
+                </form::Field>
+                
                 <button type="submit">
                     {"Register"}
                 </button>
             </form>
+        }
+    }
+}
+
+
+impl<V> Form<V>
+where
+    V: Validate<Model = Model> + Clone + PartialEq + 'static,
+{
+    fn validate(&mut self) {
+        match self.props.validator.validate(&self.model) {
+            Err(errors) => self.errors = errors,
+            Ok(_) => self.errors.clear(),
+        };
+    }
+
+    // validate_edit ignores validation for empty fields.
+    fn validate_edit(&mut self) {
+        self.validate();
+
+        {
+            if self.model.name.is_empty() {
+                self.errors.remove("name");
+            }
         }
     }
 }
