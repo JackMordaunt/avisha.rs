@@ -1,9 +1,9 @@
 use crate::site_form::{self, Form as SiteForm, Model as SiteFormModel};
 use crate::tenant_form::{self, Form as TenantForm, Model as TenantFormModel};
 use crate::validate::{SiteValidator, TenantValidator, Validate};
-use std::fmt;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt;
 use std::rc::Rc;
 use yew::format::Json;
 use yew::prelude::*;
@@ -80,15 +80,6 @@ impl Component for App {
     fn update(&mut self, msg: Self::Message) -> ShouldRender {
         match msg {
             Msg::RegisterTenant(TenantFormModel { name, contact }) => {
-                // TODO: Move validation into validation object. 
-                if name.is_empty() {
-                    return self.error(format!("tenant name must be non-zero"));
-                }
-
-                if self.state.tenants.contains_key(&name) {
-                    return self.error(format!("tenant name must be unique"));
-                };
-
                 self.state
                     .tenants
                     .insert(name.clone(), Tenant { name, contact });
