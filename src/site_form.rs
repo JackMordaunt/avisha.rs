@@ -91,7 +91,6 @@ where
             Msg::Submit => {
                 self.validate();
                 if self.props.validator.validate(&self.model).is_ok() {
-                    ConsoleService::log(&format!("submitting: {:?}", self.model));
                     self.props
                         .submit
                         .emit(mem::replace(&mut self.model, Model::default()));
@@ -119,7 +118,6 @@ where
             <form
                 onsubmit=submit
             >
-
                 <form::Field
                     label={"Site Number"}
                     error=get_error("number")
