@@ -1,0 +1,40 @@
+{
+  "done": [
+    {
+      "assignedTo": {
+        "name": "Jack Mordaunt"
+      },
+      "category": "UI",
+      "creation_time": "2020-08-05T04:58:35.447Z",
+      "description": {
+        "content": "Let the user create a Lease for a vacant Site. ",
+        "mime": "text/markdown"
+      },
+      "id": "2",
+      "references": [],
+      "title": "Create a Lease for a vacant Site"
+    }
+  ],
+  "in-progress": [
+    {
+      "assignedTo": {
+        "name": "Jack Mordaunt"
+      },
+      "category": "Feature",
+      "creation_time": "2020-08-05T04:51:47.399Z",
+      "description": {
+        "content": "`Sites` can be `Leased` to at most one `Tenant` at any given time, otherwise it is considered \"vacant\".",
+        "mime": "text/markdown"
+      },
+      "details": {
+        "content": "- A `Lease` is the exclusive usage of a `Site` by a `Tenant` for a limited period of time (the `Term`).\n- A `Lease` is \"active\" when the `Term` of the `Lease` is cur`rent`. \n- A `Site` can have multiple `Lease` associated with it, but the `Term` of the `Lease`s cannot overlap, ie a `Site` can only have one \"active\" `Lease` at a time. \n- When a `Site` has no \"active\" `Lease` it is considered \"vacant\", and therefore \"leaseable\".\n- Each `Lease` tracks at least `Utility` payments and `Rent`. \n- A `Lease`, even while not \"active\", can have debt owing on it - `Utility` or `Rent`. \n- A `Tenant` can make a payment towards `Utility` or `Rent`.\n- `Utility` can accrue credit from over-payment, which is consumed to pay the next `Utility` bill.",
+        "mime": "text/markdown"
+      },
+      "id": "1",
+      "references": [],
+      "title": "Implement Site Leasing"
+    }
+  ],
+  "testing": [],
+  "todo": []
+}
