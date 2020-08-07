@@ -1,1 +1,2 @@
-http-server.cmd .
+cargo install thttp
+thttp .
