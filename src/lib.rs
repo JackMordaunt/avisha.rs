@@ -2,10 +2,11 @@
 #![recursion_limit = "1024"]
 
 mod app;
+mod form;
+mod lease_form;
 mod site_form;
 mod tenant_form;
 mod validate;
-mod form;
 
 use wasm_bindgen::prelude::*;
 
